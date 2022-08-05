@@ -1,34 +1,31 @@
-﻿using Xunit;
+﻿using FluentAssertions;
 using OrderSystem;
-using System.Collections.Generic;
-using FluentAssertions;
 using OrderSystem.Exceptions;
+using System.Collections.Generic;
+using Xunit;
 
 namespace TestOrder
 {
     public class OrderTest
     {
-
         [Fact]
-        public void Order_Should_Be_Create()
+        public void Order_Should_Be_Created()
         {
-            var orderItem = new OrderItem("book",1);
-            var expectedOrderItem = new List<OrderItem>
-             { 
+            var orderItem = new OrderItem("book", 1);
+            var expectedOrderItems = new List<OrderItem>
+            {
                 orderItem
-             };
+            };
+            var orderResult = new Order(1, expectedOrderItems);
 
-            var orderResult = new Order(1, expectedOrderItem);
-
-            Assert.Equal(expectedOrderItem, orderResult.OrderItems);
+            Assert.Equal(expectedOrderItems, orderResult.OrderItems);
             Assert.Equal(1, orderResult.UserId);
-           
         }
 
         [Fact]
-        public void Order_State_Should_Be_Created_When_Order_Created()
+        public void Order_State_Should_Be_Created_When_Order_Create()
         {
-            var orderItem = new OrderItem("knif",2);
+            var orderItem = new OrderItem("knife", 2);
             var orderItems = new List<OrderItem>
             {
                 orderItem
@@ -39,60 +36,68 @@ namespace TestOrder
         }
 
         [Fact]
-        public void Order_Item_Should_Be_Deleted()
+        public void OrderItem_Should_Be_Deleted()
         {
             var orderItem1 = new OrderItem("book", 1);
-            var orderItem2 = new OrderItem("knif", 2);
-
-            var orderList = new List<OrderItem>
+            var orderItem2 = new OrderItem("knife", 2);
+            var orderItems = new List<OrderItem>
             {
                 orderItem1,
                 orderItem2
             };
-            var order = new Order(3, orderList);
+            var order = new Order(3, orderItems);
 
             order.RemoveItem(orderItem1);
-            Assert.Equal(orderList , order.OrderItems);
+
+            Assert.Equal(orderItems, order.OrderItems);
         }
 
         [Fact]
-        public void Order_Added_Item_When_State_Is_Created()
+        public void OrderItem_Should_Be_Added()
         {
-            var orderItem1 = new OrderItem("pen",1);
-            var orderItem2 = new OrderItem("polish", 1);
-
-            var orderList = new List<OrderItem>
-            {
-                orderItem1,
-                orderItem2
-            };
-            List<OrderItem> expectedOrderItem = orderList;
-            expectedOrderItem.Add(orderItem1);
-            var order = new Order(4, orderList);
-
-            order.AddItem(orderItem1);
-
-            Assert.Equal(expectedOrderItem, order.OrderItems);
-
-        }
-
-        [Fact]
-        public void Should_Throw_EmptyListException_When_Want_To_Add_An_Item_to_Null_List()
-        {
-            var order = () => new OrderSystem.Order(1, null);
-
-            order.Should().Throw<EmptyListException>();
-        }
-
-        [Fact]
-        public void Should_Throw_OutOfRangeRemoveItemException_When_CountOf_OrderItem_Is_Less_Than_One()
-        {
-            var orderItem = new OrderItem("book", 1);
-            var orderList = new List<OrderItem>
+            var orderItem = new OrderItem("pen", 1);
+            List<OrderItem> orderItems = new()
             {
                 orderItem
             };
-            var order = new Order(1, orderList);
+            List<OrderItem> expectedOrderItems = new()
+            {
+                orderItem,
+                orderItem
+            };
+            var order = new Order(4, orderItems);
+
+            order.AddItem(orderItem);
+
+            Assert.Equal(expectedOrderItems, order.OrderItems);
+        }
+
+        [Fact]
+        public void Should_Throw_EmptyListException_When_OrderItems_Is_Null()
+        {
+            var order = () => new Order(1, null);
+
+            order.Should().Throw<EmptyOrderItemsException>();
+        }
+
+        [Fact]
+        public void Should_Throw_EmptyListException_When_OrderItems_Is_Empty()
+        {
+            var orderItems = new List<OrderItem>();
+            var order = () => new Order(1, orderItems);
+
+            order.Should().Throw<EmptyOrderItemsException>();
+        }
+
+        [Fact]
+        public void Should_Throw_OutOfRangeRemoveItemException_When_Count_Of_OrderItems_Is_Less_Than_One()
+        {
+            var orderItem = new OrderItem("book", 1);
+            var orderItems = new List<OrderItem>
+            {
+                orderItem
+            };
+            var order = new Order(1, orderItems);
 
             var result = () => order.RemoveItem(orderItem);
 
@@ -100,75 +105,165 @@ namespace TestOrder
         }
 
         [Fact]
-        public void OrderItem_Should_Throw_InvalidRemoveItemException_When_State_Is_Finalized()
-        {
-            var orderItem1  = new OrderItem("book", 1);
-            var orderItem2 = new OrderItem("pen", 2);
-
-            var orderList = new List<OrderItem>
-            {
-                orderItem1,
-                orderItem2
-
-            };
-            var order = new Order(1, orderList);
-
-            order.OrderStateToFinalized();
-            var result = () => order.RemoveItem(orderItem2);
-
-            result.Should().Throw<InvalidRemoveItemException>();
-        }
-
-        [Fact]
-        public void OrderItem_Should_Throw_InvalidRemoveItemException_When_State_Is_Shipped()
+        public void RemoveItem_Should_Throw_InvalidRemoveItemException_When_State_Is_Finalized()
         {
             var orderItem1 = new OrderItem("book", 1);
-            var orderItem2 = new OrderItem("pen", 2); 
-            var orderList = new List<OrderItem>
+            var orderItem2 = new OrderItem("pen", 2);
+            var orderItems = new List<OrderItem>
             {
                 orderItem1,
                 orderItem2
-
             };
-            var order = new Order(1, orderList);
+            var order = new Order(1, orderItems);
 
-            order.OrderStateToFinalized();
-            order.OrderStateToShipped();
+            order.Finalized();
             var result = () => order.RemoveItem(orderItem2);
 
             result.Should().Throw<InvalidRemoveItemException>();
         }
 
         [Fact]
-        public void OrderItem_Should_Throw_InvalidAddItemException_When_State_Is_Finalized()
+        public void RemoveItem_Should_Throw_InvalidRemoveItemException_When_State_Is_Shipped()
+        {
+            var orderItem1 = new OrderItem("book", 1);
+            var orderItem2 = new OrderItem("pen", 2);
+            var orderItems = new List<OrderItem>
+            {
+                orderItem1,
+                orderItem2
+            };
+            var order = new Order(1, orderItems);
+
+            order.Finalized();
+            order.Shipped();
+            var result = () => order.RemoveItem(orderItem2);
+
+            result.Should().Throw<InvalidRemoveItemException>();
+        }
+
+        [Fact]
+        public void AddItem_Should_Throw_InvalidAddItemException_When_State_Is_Finalized()
         {
             var orderItem = new OrderItem("book", 1);
-            var orderList = new List<OrderItem>
+            var orderItems = new List<OrderItem>
             {
                 orderItem
             };
-            var order = new Order(1, orderList);
+            var order = new Order(1, orderItems);
 
-            order.OrderStateToFinalized();
+            order.Finalized();
             var result = () => order.AddItem(orderItem);
 
             result.Should().Throw<InvalidAddItemException>();
         }
         [Fact]
-        public void OrderItem_Should_Throw_InvalidAddItemException_When_State_Is_Shipped()
+        public void AddItem_Should_Throw_InvalidAddItemException_When_State_Is_Shipped()
         {
             var orderItem = new OrderItem("book", 1);
-            var orderList = new List<OrderItem>
+            var orderItems = new List<OrderItem>
             {
                 orderItem
             };
-            var order = new Order(1, orderList);
+            var order = new Order(1, orderItems);
 
-            order.OrderStateToFinalized();
-            order.OrderStateToShipped();
+            order.Finalized();
+            order.Shipped();
             var result = () => order.AddItem(orderItem);
 
             result.Should().Throw<InvalidAddItemException>();
+        }
+
+        [Fact]
+        public void Order_State_Should_Be_Finalized()
+        {
+            var orderItem = new OrderItem("book", 1);
+            var orderItems = new List<OrderItem>
+            {
+                orderItem
+            };
+            var order = new Order(1, orderItems);
+
+            order.Finalized();
+
+            order.State.Should().Be(StateType.Finalized);
+        }
+
+        [Fact]
+        public void Order_State_Should_Be_Shipped()
+        {
+            var orderItem = new OrderItem("book", 1);
+            var orderItems = new List<OrderItem>
+            {
+                orderItem
+            };
+            var order = new Order(1, orderItems);
+
+            order.Finalized();
+            order.Shipped();
+
+            order.State.Should().Be(StateType.Shipped);
+        }
+
+        [Fact]
+        public void Finalized_Should_Throw_When_State_Is_Shipped()
+        {
+            var orderItem = new OrderItem("book", 1);
+            var orderItems = new List<OrderItem>
+            {
+                orderItem
+            };
+            var order = new Order(1, orderItems);
+
+            order.Finalized();
+            order.Shipped();
+            var result = () => order.Finalized();
+
+            result.Should().Throw<ChangeStateToFinalizeException>();
+        }
+
+        [Fact]
+        public void Shipped_Should_Throw_When_State_Is_Created()
+        {
+            var orderItem = new OrderItem("book", 1);
+            var orderItems = new List<OrderItem>
+            {
+                orderItem
+            };
+            var order = new Order(1, orderItems);
+
+            var result = () => order.Shipped();
+
+            result.Should().Throw<ChangeStateToShippedException>();
+        }
+
+        [Fact]
+        public void AddItem_Should_Throw_NullOrderItemException_When_OrderItem_Is_Null()
+        {
+            var orderItem = new OrderItem("book", 1);
+            var orderItems = new List<OrderItem>
+            {
+                orderItem
+            };
+            var order = new Order(1, orderItems);
+
+            var result = () => order.AddItem(null);
+
+            result.Should().Throw<NullOrderItemException>();
+        }
+
+        [Fact]
+        public void RemoveItem_Should_Throw_NullOrderItemException_When_OrderItem_Is_Null()
+        {
+            var orderItem = new OrderItem("book", 1);
+            var orderItems = new List<OrderItem>
+            {
+                orderItem
+            };
+            var order = new Order(1, orderItems);
+
+            var result = () => order.RemoveItem(null);
+
+            result.Should().Throw<NullOrderItemException>();
         }
     }
 }

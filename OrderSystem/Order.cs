@@ -1,73 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OrderSystem
+﻿namespace OrderSystem
 {
     public class Order
     {
         public int UserId { get; private set; }
         public StateType State { get; private set; }
-        public List<OrderItem> OrderItems = new List<OrderItem>();
+        public List<OrderItem> OrderItems = new();
 
         public Order(int userId, List<OrderItem> orderItems)
         {
-            OrderItems = orderItems;
-            EnsureCurrectValue(OrderItems);
+            EnsureCurrectOrderItem(orderItems);
+
             UserId = userId;
             State = StateType.Created;
-            
+            OrderItems = orderItems;
         }
-        public void EnsureCurrectValue(List<OrderItem> orderItems)
+        public void EnsureCurrectOrderItem(List<OrderItem> orderItems)
         {
-            if (OrderItems == null || OrderItems.Count == 0)
-                throw new Exceptions.EmptyListException();
+            if (orderItems == null || orderItems.Count == 0)
+                throw new Exceptions.EmptyOrderItemsException();
         }
 
-        public void ChangeStateOrder(StateType state)
-        {
-            if (state == StateType.Finalized)
-                OrderStateToFinalized();
-
-            else if (state == StateType.Shipped)
-                OrderStateToShipped();
-        }
-        public void OrderStateToFinalized()
+        public void Finalized()
         {
             if (State == StateType.Shipped)
                 throw new Exceptions.ChangeStateToFinalizeException();
+
             State = StateType.Finalized;
         }
-        public void OrderStateToShipped()
+
+        public void Shipped()
         {
             if (State == StateType.Created)
                 throw new Exceptions.ChangeStateToShippedException();
-            else
-             State = StateType.Shipped;
+
+            State = StateType.Shipped;
         }
 
-        public void AddItem(OrderItem orderItems)
+        public void AddItem(OrderItem orderItem)
         {
+            if (orderItem == null)
+                throw new Exceptions.NullOrderItemException();
+
             if (State != StateType.Created)
-              throw new Exceptions.InvalidAddItemException();
-           
-            OrderItems.Add(orderItems);
+                throw new Exceptions.InvalidAddItemException();
+
+            OrderItems.Add(orderItem);
         }
-        public void RemoveItem(OrderItem orderItems)
+
+        public void RemoveItem(OrderItem orderItem)
         {
-            if (State == StateType.Created)
-             {
-               if (OrderItems.Count > 1)
-                  OrderItems.Remove(orderItems);
-              else
-                  throw new Exceptions.OutOfRangeRemoveItemException();
-             }
-            else
-             throw new Exceptions.InvalidRemoveItemException();
+            if (orderItem is null)
+                throw new Exceptions.NullOrderItemException();
+
+            if (State != StateType.Created)
+                throw new Exceptions.InvalidRemoveItemException();
+
+            if (OrderItems.Count == 1)
+                throw new Exceptions.OutOfRangeRemoveItemException();
+
+            OrderItems.Remove(orderItem);
         }
     }
+
     public enum StateType
     {
         Created = 1,
