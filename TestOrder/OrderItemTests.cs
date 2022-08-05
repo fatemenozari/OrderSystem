@@ -16,18 +16,16 @@ namespace TestOrder
         {
             var orderItem = () => new OrderSystem.OrderItem("book", count);
 
-            orderItem.Should().Throw < OutOfRangeCount > ();
+            orderItem.Should().Throw<OutOfRangeCount>();
         }
-
 
         [Fact]
         public void OrderItem_Should_Be_Created()
         {
-            var orderItem = new OrderSystem.OrderItem("book", 2);
+            var orderItem = new OrderSystem.OrderItem("book",1);
 
-            Assert.Equal(2, orderItem.Count);
+            Assert.Equal(1, orderItem.Count);
             Assert.Equal("book", orderItem.Name);
-
         }
 
 

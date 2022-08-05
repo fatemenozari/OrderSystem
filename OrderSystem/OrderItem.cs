@@ -11,8 +11,6 @@ namespace OrderSystem
         public string Name { get; private set; }
         public int Count { get; private set; }
 
-
-
         public OrderItem(string name, int count)
         {
             CheckerCount(count);
@@ -25,8 +23,5 @@ namespace OrderSystem
             if (count > 3 || count <= 0)
                 throw new Exceptions.OutOfRangeCount();
         }
-           
-
     }
-    
 }

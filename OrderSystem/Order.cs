@@ -10,50 +10,62 @@ namespace OrderSystem
     {
         public int UserId { get; private set; }
         public StateType State { get; private set; }
-        List<OrderItem> OrderItems = new List<OrderItem>();
+        public List<OrderItem> OrderItems = new List<OrderItem>();
 
         public Order(int userId, List<OrderItem> orderItems)
         {
-            CheckList();
-            UserId = userId;
             OrderItems = orderItems;
+            EnsureCurrectValue(OrderItems);
+            UserId = userId;
             State = StateType.Created;
+            
         }
-        public void CheckList()
+        public void EnsureCurrectValue(List<OrderItem> orderItems)
         {
-            if (OrderItems == null || OrderItems.Count < 0)
+            if (OrderItems == null || OrderItems.Count == 0)
                 throw new Exceptions.EmptyListException();
         }
 
-        public void ChangeState(StateType state)
+        public void ChangeStateOrder(StateType state)
         {
             if (state == StateType.Finalized)
-                if (State == StateType.Created)
-                    State = StateType.Finalized;
-                else
-                    throw new Exceptions.ChangeStateToFinalizeException();
+                OrderStateToFinalized();
 
             else if (state == StateType.Shipped)
-                if (State == StateType.Finalized)
-                    State = StateType.Shipped;
-                else 
-                    throw new Exceptions.ChangeStateToShippedException();
+                OrderStateToShipped();
+        }
+        public void OrderStateToFinalized()
+        {
+            if (State == StateType.Shipped)
+                throw new Exceptions.ChangeStateToFinalizeException();
+            State = StateType.Finalized;
+        }
+        public void OrderStateToShipped()
+        {
+            if (State == StateType.Created)
+                throw new Exceptions.ChangeStateToShippedException();
+            else
+             State = StateType.Shipped;
         }
 
-        public void Add(List<OrderItem> orderItems)
+        public void AddItem(OrderItem orderItems)
         {
             if (State != StateType.Created)
-                throw new Exceptions.InvalidAddItemException();
-            
-            OrderItems.AddRange(orderItems);
+              throw new Exceptions.InvalidAddItemException();
+           
+            OrderItems.Add(orderItems);
         }
-        public void Remove(OrderItem orderItems)
+        public void RemoveItem(OrderItem orderItems)
         {
-           CheckList();
-           if (State != StateType.Created)
-                throw new Exceptions.InvalidRemoveItemException();
             if (State == StateType.Created)
-                OrderItems.Remove(orderItems);
+             {
+               if (OrderItems.Count > 1)
+                  OrderItems.Remove(orderItems);
+              else
+                  throw new Exceptions.OutOfRangeRemoveItemException();
+             }
+            else
+             throw new Exceptions.InvalidRemoveItemException();
         }
     }
     public enum StateType
@@ -62,5 +74,4 @@ namespace OrderSystem
         Shipped = 2,
         Finalized = 3
     }
-
 }

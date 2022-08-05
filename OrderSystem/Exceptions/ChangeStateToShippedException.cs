@@ -8,7 +8,7 @@ namespace OrderSystem.Exceptions
 {
     internal class ChangeStateToShippedException: Exception
     {
-        public override string Message => " This order is not Shipped.";
+        public override string Message => " This order Can not be Shipped.";
 
     }
 }
