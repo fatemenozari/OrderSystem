@@ -1,6 +1,7 @@
 using FluentAssertions;
 using OrderSystem;
 using OrderSystem.Exceptions;
+using TestOrder.Builders;
 using Xunit;
 
 namespace TestOrder
@@ -13,18 +14,24 @@ namespace TestOrder
         [InlineData(-1)]
         public void Should_Throw_OutOfRangeCountException_When_Count_Is_Invalid(int count)
         {
-            var orderItem = () => new OrderItem("book", count);
+            var orderItemBuilder = new OrderItemBuilder().WithCount(count);
+            
+            var OrderItem = () => orderItemBuilder.Build();
 
-            orderItem.Should().Throw<OutOfRangeCount>();
+            OrderItem.Should().Throw<OutOfRangeCount>();
         }
 
         [Fact]
         public void OrderItem_Should_Be_Created()
         {
-            var orderItem = new OrderItem("book", 1);
+            var orderItemBuilder = new OrderItemBuilder()
+                .WithCount(1)
+                .WithName("book");
 
-            Assert.Equal(1, orderItem.Count);
-            Assert.Equal("book", orderItem.Name);
+            var OrderItem = orderItemBuilder.Build();
+
+            Assert.Equal(1,OrderItem.Count);
+            Assert.Equal("book", OrderItem.Name);
         }
     }
 }

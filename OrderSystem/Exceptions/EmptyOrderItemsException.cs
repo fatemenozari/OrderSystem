@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrderSystem.Exceptions
 {
-    public class EmptyOrderItemsException: Exception
+    public class EmptyOrNullOrderItemsException: Exception
     {
         public override string Message => " List Is Null Or Empty .";
 

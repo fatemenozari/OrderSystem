@@ -17,7 +17,7 @@
         public void EnsureCurrectOrderItem(List<OrderItem> orderItems)
         {
             if (orderItems == null || orderItems.Count == 0)
-                throw new Exceptions.EmptyOrderItemsException();
+                throw new Exceptions.EmptyOrNullOrderItemsException();
         }
 
         public void Finalized()
